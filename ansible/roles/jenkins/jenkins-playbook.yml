@@ -1,0 +1,7 @@
+---
+- name: Setup Jenkins Server
+  hosts: tag_Jenkins_Instance
+  become: true
+
+  roles:
+    - jenkins

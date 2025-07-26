@@ -1,0 +1,10 @@
+---
+- name: Reload systemd
+  become: true
+  command: systemctl daemon-reexec
+
+- name: Restart Jenkins
+  become: true
+  systemd:
+    name: jenkins
+    state: restarted
