@@ -21,7 +21,7 @@ pipeline {
                 script {
                     sh """
                         echo "Running test container for ${IMAGE_NAME}:${IMAGE_TAG}"
-                        docker run -d --name test-container -p 8080:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d --name test-container -p 9080:80 ${IMAGE_NAME}:${IMAGE_TAG}
                         sleep 5
                         echo "Testing app health at http://localhost:8080"
                         curl -f http://localhost:8080 || (docker logs test-container && exit 1)
