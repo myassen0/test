@@ -4,8 +4,8 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Copy project files
-COPY . .
+# Copy only the app files (from parent directory)
+COPY my_app/ /app/
 
 # Install Flask
 RUN pip install --no-cache-dir flask
