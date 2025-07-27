@@ -15,6 +15,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Test Image') {
+            steps {
+                script {
+                    sh """
+                        echo "Running test container for ${IMAGE_NAME}:${IMAGE_TAG}"
+                        docker run -d --name test-container -p 8080:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                        sleep 5
+                        echo "Testing app health at http://localhost:8080"
+                        curl -f http://localhost:8080 || (docker logs test-container && exit 1)
+                        docker stop test-container
+                        docker rm test-container
+                    """
+                }
+            }
+        }
+
         stage('Scan Image') {
             steps {
                 script {
@@ -22,6 +39,7 @@ pipeline {
                 }
             }
         }
+
         stage('Push Image') {
             steps {
                 script {
@@ -29,6 +47,7 @@ pipeline {
                 }
             }
         }
+
         stage('Delete Local Image') {
             steps {
                 script {
@@ -36,6 +55,7 @@ pipeline {
                 }
             }
         }
+
         stage('Update Manifests') {
             steps {
                 script {
@@ -43,6 +63,7 @@ pipeline {
                 }
             }
         }
+
         stage('Push Manifests') {
             steps {
                 sh '''
