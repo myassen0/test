@@ -72,7 +72,7 @@ pipeline {
                         docker rm -f test-container || true
 
                         echo "Running test container for ${IMAGE_NAME}:${IMAGE_TAG}"
-                        docker run -d --name test-container -p 9080:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d --name test-container -p 9080:5000 yassenn01/my-app:latest
 
                         echo "Waiting for container to start..."
                         sleep 5
