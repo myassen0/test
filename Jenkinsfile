@@ -16,22 +16,6 @@ pipeline {
             }
         }
 
-        stage('Test Image') {
-            steps {
-                script {
-                    sh """
-                        echo "Running test container for ${IMAGE_NAME}:${IMAGE_TAG}"
-                        docker run -d --name test-container -p 9080:80 ${IMAGE_NAME}:${IMAGE_TAG}
-                        sleep 5
-                        echo "Testing app health at http://localhost:8080"
-                        curl -f http://localhost:8080 || (docker logs test-container && exit 1)
-                        docker stop test-container
-                        docker rm test-container
-                    """
-                }
-            }
-        }
-
         stage('Scan Image') {
             steps {
                 script {
@@ -77,6 +61,30 @@ pipeline {
                         echo "No changes to commit."
                     fi
                 '''
+            }
+        }
+
+        stage('Test Image') {
+            steps {
+                script {
+                    sh """
+                        echo "Cleaning up any existing test container..."
+                        docker rm -f test-container || true
+
+                        echo "Running test container for ${IMAGE_NAME}:${IMAGE_TAG}"
+                        docker run -d --name test-container -p 9080:80 ${IMAGE_NAME}:${IMAGE_TAG}
+
+                        echo "Waiting for container to start..."
+                        sleep 5
+
+                        echo "Testing app at http://localhost:9080"
+                        curl -f http://localhost:9080 || (docker logs test-container && exit 1)
+
+                        echo "Cleaning up test container"
+                        docker stop test-container
+                        docker rm test-container
+                    """
+                }
             }
         }
     }
