@@ -49,11 +49,14 @@ pipeline {
                     git config user.email "jenkins@example.com"
                     git config user.name "Jenkins CI"
                     git add $K8S_PATH
-                    git commit -m "Auto: update image tag"
-                    git push origin main || true
+                    if ! git diff --cached --quiet; then
+                        git commit -m "Auto: update image tag"
+                        git push origin main
+                    else
+                        echo "No changes to commit."
+                    fi
                 '''
             }
         }
     }
 }
-
