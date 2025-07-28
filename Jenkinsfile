@@ -99,6 +99,7 @@ pipeline {
                         git add $K8S_PATH
 
                         if ! git diff --cached --quiet; then
+                            sh "git diff --quiet || git commit -am 'Auto: update image tag'"
                             git commit -m "Auto: update image tag"
                             git push https://$GIT_USER:$GIT_PASS@github.com/myassen0/CloudDevOpsProject.git HEAD:main
                         else
