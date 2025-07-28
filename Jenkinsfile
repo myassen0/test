@@ -23,8 +23,11 @@ pipeline {
         stage('Skip Jenkins Auto Commit') {
             steps {
                 script {
-                    def author = sh(script: "git log -1 --pretty=%an", returnStdout: true).trim()
-                    if (author == "Jenkins CI") {
+                    def authorName = sh(script: "git log -1 --pretty=%an", returnStdout: true).trim()
+                    def authorEmail = sh(script: "git log -1 --pretty=%ae", returnStdout: true).trim()
+                    if (authorName == "Mahmoud Yassen" && authorEmail == "mahmoudyassen1005@gmail.com") {
+                        echo "Manual commit. Proceeding with build."
+                    } else if (authorName == "Jenkins CI") {
                         currentBuild.result = 'NOT_BUILT'
                         error("Skipping build triggered by Jenkins auto commit.")
                     }
@@ -33,9 +36,6 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 script {
                     buildDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -44,9 +44,6 @@ pipeline {
         }
 
         stage('Scan Docker Image') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 script {
                     scanDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -55,9 +52,6 @@ pipeline {
         }
 
         stage('Push Docker Image') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 script {
                     pushDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -66,9 +60,6 @@ pipeline {
         }
 
         stage('Delete Local Docker Image') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 script {
                     deleteLocalDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -77,9 +68,6 @@ pipeline {
         }
 
         stage('Update K8s Manifests') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 script {
                     updateK8sManifests(IMAGE_NAME, IMAGE_TAG, K8S_PATH)
@@ -88,18 +76,15 @@ pipeline {
         }
 
         stage('Push Manifests') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     sh '''
-                        git config user.email "mahmoudyassen1005@gmail.com"
                         git config user.name "Mahmoud Yassen"
+                        git config user.email "mahmoudyassen1005@gmail.com"
                         git add $K8S_PATH
 
                         if ! git diff --cached --quiet; then
-                            sh "git diff --quiet || git commit -am 'Auto: update image tag'"
+                            GIT_COMMITTER_NAME="Mahmoud Yassen" GIT_COMMITTER_EMAIL="mahmoudyassen1005@gmail.com" \
                             git commit -m "Auto: update image tag"
                             git push https://$GIT_USER:$GIT_PASS@github.com/myassen0/CloudDevOpsProject.git HEAD:main
                         else
@@ -111,9 +96,6 @@ pipeline {
         }
 
         stage('Test Image') {
-            when {
-                changeset "**/*"
-            }
             steps {
                 sh 'echo "Image tested successfully."'
             }
