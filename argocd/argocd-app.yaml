@@ -11,7 +11,7 @@ spec:
     path: k8s  # مكان ملفات deployment داخل الريبو
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: iVolve
+    namespace: ivolve
   syncPolicy:
     automated:
       prune: true        # يحذف أي ريسورس تمسح من git
