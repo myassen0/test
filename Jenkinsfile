@@ -4,7 +4,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "myassen0/my-app"
+        IMAGE_NAME = "yassenn01/my-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
         K8S_PATH = "k8s/"
     }
