@@ -4,7 +4,7 @@ pipeline {
     agent any
     environment {
         IMAGE_NAME = "yassenn01/my-app"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
         K8S_PATH = "k8s"
     }
     stages {
