@@ -3,6 +3,11 @@
 pipeline {
     agent any
 
+    triggers {
+        // لو كنت عامل Webhook خلاص مش محتاج ده
+        // pollSCM('* * * * *') ← شيلناها علشان تمنع التريجر التلقائي
+    }
+
     environment {
         IMAGE_NAME = "yassenn01/my-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
@@ -17,6 +22,9 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 script {
                     buildDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -25,6 +33,9 @@ pipeline {
         }
 
         stage('Scan Docker Image') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 script {
                     scanDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -33,6 +44,9 @@ pipeline {
         }
 
         stage('Push Docker Image') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 script {
                     pushDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -41,6 +55,9 @@ pipeline {
         }
 
         stage('Delete Local Docker Image') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 script {
                     deleteLocalDockerImage(IMAGE_NAME, IMAGE_TAG)
@@ -49,6 +66,9 @@ pipeline {
         }
 
         stage('Update K8s Manifests') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 script {
                     updateK8sManifests(IMAGE_NAME, IMAGE_TAG, K8S_PATH)
@@ -57,6 +77,9 @@ pipeline {
         }
 
         stage('Push Manifests') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     sh '''
@@ -76,6 +99,9 @@ pipeline {
         }
 
         stage('Test Image') {
+            when {
+                changeset "**/*"
+            }
             steps {
                 sh 'echo "Image tested successfully."'
             }
