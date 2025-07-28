@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>تعديل بيانات العميل</h2>
+<form method="POST">
+    <input type="text" name="name" value="{{ client.name }}" required>
+    <input type="date" name="subscription_from" value="{{ client.from }}" required>
+    <input type="date" name="subscription_to" value="{{ client.to }}" required>
+    <input type="number" name="amount_paid" value="{{ client.amount }}" required>
+    <textarea name="notes">{{ client.notes }}</textarea>
+    <button type="submit">تحديث</button>
+</form>
+{% endblock %}

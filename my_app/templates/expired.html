@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>العملاء المنتهية اشتراكاتهم</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>العملاء الذين انتهت اشتراكاتهم</h2>
+        {% if expired_clients %}
+            <table>
+                <tr>
+                    <th>الاسم</th>
+                    <th>من</th>
+                    <th>إلى</th>
+                    <th>المبلغ</th>
+                    <th>ملاحظات</th>
+                    <th>الكابتن</th>
+                </tr>
+                {% for client in expired_clients %}
+                <tr class="expired">
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.sub_from }}</td>
+                    <td>{{ client.sub_to }}</td>
+                    <td>{{ client.amount }}</td>
+                    <td>{{ client.notes }}</td>
+                    <td>{{ client.coach }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>لا يوجد عملاء انتهت اشتراكاتهم.</p>
+        {% endif %}
+        <br>
+        <a href="{{ url_for('index') }}">العودة للرئيسية</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>بحث عن عميل</h2>
+<form method="POST">
+    <input type="text" name="query" placeholder="اكتب اسم العميل" required>
+    <button type="submit">بحث</button>
+</form>
+{% if results %}
+<table>
+    <tr>
+        <th>الاسم</th>
+        <th>من</th>
+        <th>إلى</th>
+        <th>المدفوع</th>
+        <th>ملاحظات</th>
+        <th>إجراءات</th>
+    </tr>
+    {% for c in results %}
+    <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.from }}</td>
+        <td>{{ c.to }}</td>
+        <td>{{ c.amount }}</td>
+        <td>{{ c.notes }}</td>
+        <td>
+            <a href="{{ url_for('edit_client', id=c.id) }}">تعديل</a> |
+            <a href="{{ url_for('delete_client', id=c.id) }}">حذف</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endblock %}
