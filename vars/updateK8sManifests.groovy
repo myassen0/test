@@ -4,7 +4,7 @@ def call(String imageName, String imageTag) {
 
     def updatedContent = content.replaceAll(
         /(image:\s+)(\S+)/,
-        "$1${imageName}:${imageTag}"
+        "\$1${imageName}:${imageTag}"
     )
 
     writeFile(file: filePath, text: updatedContent)
