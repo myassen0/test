@@ -1,11 +1,18 @@
-def call(Map config = [:]) {
-    def imageTag = config.imageTag ?: "latest"
-    def filePath = config.filePath ?: "k8s/deployment.yaml"
-    def containerName = config.containerName ?: "app"
+def call(String imageTag) {
+    def filePath = 'k8s/deployment.yaml'
+    def content = readFile(filePath)
 
-    echo "Updating K8s manifests with image tag: ${imageTag}"
+    def updatedContent = content.replaceAll(
+        /(image:\s+.+:)([\w\.-]+)/,
+        "$1${imageTag}"
+    )
 
-    def deployment = readFile(filePath)
-    def updatedDeployment = deployment.replaceAll("(image:\\s.+:${containerName})(:[\\w.-]+)?", "\$1:${imageTag}")
-    writeFile(file: filePath, text: updatedDeployment)
+    writeFile(file: filePath, text: updatedContent)
+    echo "✅ Updated image tag to: ${imageTag}"
+
+    // 🚫 Removed to avoid infinite loop in ArgoCD auto-sync
+    // sh 'git config user.email "jenkins@example.com"'
+    // sh 'git config user.name "Jenkins CI"'
+    // sh "git commit -am 'Auto: update image tag' || echo 'No changes to commit'"
+    // sh 'git push origin main'
 }
