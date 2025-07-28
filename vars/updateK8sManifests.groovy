@@ -2,11 +2,17 @@ def call(String imageName, String imageTag) {
     def filePath = 'k8s/deployment.yaml'
     def content = readFile(filePath)
 
-    def updatedContent = content.replaceAll(
-        /(image:\s+)(\S+)/,
-        "\$1${imageName}:${imageTag}"
-    )
+    // استخلاص التاج الحالي من المانيفست
+    def currentTag = content.find(/image:\s+\S+:(\S+)/) { full, tag -> tag }
 
-    writeFile(file: filePath, text: updatedContent)
-    echo "✅ Updated image to: ${imageName}:${imageTag}"
+    if (currentTag == imageTag) {
+        echo "✅ Kubernetes manifest is already using image tag: ${imageTag}. Skipping update."
+        return
+    }
+
+    // تعديل التاج
+    def newContent = content.replaceAll(/(image:\s+\S+:)(\S+)/, "\$1${imageTag}")
+    writeFile file: filePath, text: newContent
+
+    echo "🛠️ Updated image tag in Kubernetes manifest to: ${imageTag}"
 }
