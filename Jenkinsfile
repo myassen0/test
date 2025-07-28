@@ -3,31 +3,22 @@
 pipeline {
     agent any
 
-    triggers {
-        githubPush()
+    environment {
+        IMAGE_NAME = "myapp"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        K8S_PATH = "k8s"
     }
 
-    environment {
-        IMAGE_NAME = "yassenn01/my-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
-        K8S_PATH = "k8s/"
+    options {
+        skipStagesAfterUnstable()
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/myassen0/CloudDevOpsProject.git', branch: 'main'
-            }
-        }
-
         stage('Skip Jenkins Auto Commit') {
             steps {
                 script {
-                    def authorName = sh(script: "git log -1 --pretty=%an", returnStdout: true).trim()
-                    def authorEmail = sh(script: "git log -1 --pretty=%ae", returnStdout: true).trim()
-                    if (authorName == "Mahmoud Yassen" && authorEmail == "mahmoudyassen1005@gmail.com") {
-                        echo "Manual commit. Proceeding with build."
-                    } else if (authorName == "Jenkins CI") {
+                    def author = sh(script: "git log -1 --pretty=%an", returnStdout: true).trim()
+                    if (author == "Jenkins CI") {
                         currentBuild.result = 'NOT_BUILT'
                         error("Skipping build triggered by Jenkins auto commit.")
                     }
@@ -35,10 +26,19 @@ pipeline {
             }
         }
 
+        stage('Clone Repo') {
+            steps {
+                git branch: 'main', url: 'https://github.com/myassen0/CloudDevOpsProject.git'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    buildDockerImage(IMAGE_NAME, IMAGE_TAG)
+                    buildDockerImage(
+                        imageName: "${IMAGE_NAME}",
+                        imageTag: "${IMAGE_TAG}"
+                    )
                 }
             }
         }
@@ -46,7 +46,10 @@ pipeline {
         stage('Scan Docker Image') {
             steps {
                 script {
-                    scanDockerImage(IMAGE_NAME, IMAGE_TAG)
+                    scanDockerImage(
+                        imageName: "${IMAGE_NAME}",
+                        imageTag: "${IMAGE_TAG}"
+                    )
                 }
             }
         }
@@ -54,15 +57,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    pushDockerImage(IMAGE_NAME, IMAGE_TAG)
-                }
-            }
-        }
-
-        stage('Delete Local Docker Image') {
-            steps {
-                script {
-                    deleteLocalDockerImage(IMAGE_NAME, IMAGE_TAG)
+                    pushDockerImage(
+                        imageName: "${IMAGE_NAME}",
+                        imageTag: "${IMAGE_TAG}"
+                    )
                 }
             }
         }
@@ -70,34 +68,46 @@ pipeline {
         stage('Update K8s Manifests') {
             steps {
                 script {
-                    updateK8sManifests(IMAGE_NAME, IMAGE_TAG, K8S_PATH)
+                    updateK8sManifests(
+                        imageTag: "${IMAGE_TAG}",
+                        filePath: "${K8S_PATH}/deployment.yaml",
+                        containerName: "app"
+                    )
                 }
             }
         }
 
         stage('Push Manifests') {
+            when {
+                changeset "${K8S_PATH}/**"
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     sh '''
-                        git config user.name "Mahmoud Yassen"
                         git config user.email "mahmoudyassen1005@gmail.com"
+                        git config user.name "Mahmoud Yassen"
+
                         git add $K8S_PATH
 
-                        if ! git diff --cached --quiet; then
-                            GIT_COMMITTER_NAME="Mahmoud Yassen" GIT_COMMITTER_EMAIL="mahmoudyassen1005@gmail.com" \
+                        if git diff --cached --quiet; then
+                            echo "No changes to commit."
+                        else
                             git commit -m "Auto: update image tag"
                             git push https://$GIT_USER:$GIT_PASS@github.com/myassen0/CloudDevOpsProject.git HEAD:main
-                        else
-                            echo "No changes to commit."
                         fi
                     '''
                 }
             }
         }
 
-        stage('Test Image') {
+        stage('Delete Local Docker Image') {
             steps {
-                sh 'echo "Image tested successfully."'
+                script {
+                    deleteLocalDockerImage(
+                        imageName: "${IMAGE_NAME}",
+                        imageTag: "${IMAGE_TAG}"
+                    )
+                }
             }
         }
     }
