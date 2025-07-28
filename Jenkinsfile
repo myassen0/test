@@ -94,8 +94,8 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     sh '''
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins CI"
+                        git config user.email "mahmoudyassen1005@gmail.com"
+                        git config user.name "Mahmoud Yassen"
                         git add $K8S_PATH
 
                         if ! git diff --cached --quiet; then
