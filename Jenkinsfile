@@ -4,8 +4,7 @@ pipeline {
     agent any
 
     triggers {
-        // لو كنت عامل Webhook خلاص مش محتاج ده
-        // pollSCM('* * * * *') ← شيلناها علشان تمنع التريجر التلقائي
+        githubPush()
     }
 
     environment {
