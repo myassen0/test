@@ -4,4 +4,3 @@ def call(String imageName, String imageTag, String manifestPath) {
     find ${manifestPath} -name '*.yaml' -exec sed -i 's|image: .\\+|image: ${imageName}:${imageTag}|' {} +
     """
 }
-
