@@ -4,7 +4,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "myapp"
+        IMAGE_NAME = "yassenn01/myapp"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
