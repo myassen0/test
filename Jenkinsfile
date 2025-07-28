@@ -7,6 +7,7 @@ pipeline {
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         K8S_PATH = "k8s"
     }
+
     stages {
         stage('Build Image') {
             steps {
