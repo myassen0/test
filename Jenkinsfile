@@ -17,8 +17,8 @@ pipeline {
         stage('Skip Jenkins Auto Commit') {
             steps {
                 script {
-                    def author = sh(script: "git log -1 --pretty=%an", returnStdout: true).trim()
-                    if (author == "Jenkins CI") {
+                    def commitMessage = sh(script: "git log -1 --pretty=%B", returnStdout: true).trim()
+                    if (commitMessage.contains("Auto: update image tag")) {
                         currentBuild.result = 'NOT_BUILT'
                         error("Skipping build triggered by Jenkins auto commit.")
                     }
