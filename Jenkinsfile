@@ -56,7 +56,7 @@ pipeline {
                     git add $K8S_PATH
                     if ! git diff --cached --quiet; then
                         git commit -m "Auto: update image tag"
-                        git push origin main
+                        git push origin HEAD:main
                     else
                         echo "No changes to commit."
                     fi
