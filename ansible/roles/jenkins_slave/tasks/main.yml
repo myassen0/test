@@ -1,0 +1,42 @@
+# ~/CloudDevOpsProject/ansible/roles/jenkins_slave/tasks/main.yml
+---
+- name: Create Jenkins slave home directory
+  ansible.builtin.file:
+    path: /home/ec2-user/jenkins
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755' # صلاحيات 0755 مناسبة للفولدر
+  become: true
+
+- name: Ensure .ssh directory exists for ec2-user on slave # <--- مهمة جديدة: إنشاء فولدر .ssh
+  ansible.builtin.file:
+    path: /home/ec2-user/.ssh
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0700' # صلاحيات 0700 (rwx------) ضرورية جداً لـ.ssh عشان الأمان
+  become: true
+
+- name: Set up SSH key for Jenkins slave to connect to Master or Git (optional)
+  ansible.builtin.copy:
+    src: /root/.ssh/mykey.pem # تأكد من المسار الصحيح للمفتاح على جهازك المحلي (الـAnsible Control Node)
+    dest: /home/ec2-user/.ssh/id_rsa # المسار الصحيح للمفتاح على السليف
+    owner: ec2-user
+    group: ec2-user
+    mode: '0600' # صلاحيات 0600 (rw-------) ضرورية جداً للمفتاح الخاص
+  become: true
+
+- name: Configure Java PATH for ec2-user # <--- مهمة جديدة: إضافة مسار Java للـPATH
+  ansible.builtin.lineinfile:
+    path: /home/ec2-user/.bashrc
+    line: 'export PATH="/usr/lib/jvm/java-17-amazon-corretto/bin:$PATH"' # <--- تأكد من المسار ده بالظبط
+    create: yes # لو الملف مش موجود هيعمله
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'
+    state: present
+  become: true
+
+# هنا ممكن تضيف مهام إضافية لربط الـSlave بالـMaster لو كنت هتستخدم طريقة الـJNLP Agent
+# أو أي إعدادات أخرى خاصة بالـSlave.

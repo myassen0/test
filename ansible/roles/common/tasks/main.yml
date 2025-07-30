@@ -1,8 +1,73 @@
 ---
-- name: Install base packages
-  package:
-    name: "{{ item }}"
+- name: Update yum cache
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+  become: true
+
+- name: Install Git
+  yum:
+    name: git
     state: present
-  loop:
-    - git
-    - docker
+  become: true
+
+- name: Install Docker prerequisites
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+  become: true
+
+- name: Add Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/centos/gpg
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-docker
+    mode: '0644'
+  become: true
+
+- name: Import Docker GPG key to RPM
+  ansible.builtin.command: rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-docker
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo # عشان ميتنفذش تاني لو الـrepo موجود
+  become: true
+
+- name: Add Docker repository
+  ansible.builtin.yum_repository:
+    name: docker-ce
+    description: Docker CE Stable - Amazon Linux 2023
+    baseurl: https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/$basearch/stable/
+    gpgcheck: yes
+    enabled: yes
+  become: true
+
+- name: Install Docker CE
+  yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+  become: true
+
+- name: Start and enable Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: true
+
+- name: Add 'ec2-user' to docker group
+  ansible.builtin.user:
+    name: ec2-user
+    groups: docker
+    append: yes
+  become: true
+
+- name: Install Java (OpenJDK 11) - common requirement
+  dnf:
+    name: java-17-amazon-corretto-devel # ده اسم الباكدج لـOpenJDK 11 على Amazon Linux
+    state: present
+  become: true

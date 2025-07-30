@@ -1,0 +1,8 @@
+- name: Configure Jenkins Slave
+  hosts: Jenkins_Slave # هيستهدف الـinstance اللي ليها tag.Role=Jenkins-Slave
+  become: true # عشان ينفذ الأوامر بـsudo
+  gather_facts: true
+
+  roles:
+    - common
+    - jenkins_slave

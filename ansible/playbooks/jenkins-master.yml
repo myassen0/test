@@ -1,0 +1,8 @@
+- name: Configure Jenkins Master
+  hosts: Jenkins_Master
+  become: true 
+  gather_facts: true
+
+  roles:
+    - common
+    - jenkins_master
